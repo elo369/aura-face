@@ -1,180 +1,3 @@
-// // server.js  —  run with: node server.js
-// // npm install express cors node-fetch dotenv
-
-// import express from "express";
-// import cors from "cors";
-// import dotenv from "dotenv";
-
-// dotenv.config();
-
-// const app = express();
-// const PORT = process.env.PORT || 3001;
-
-// // Allow your Vite / CRA dev server (and production origin)
-// app.use(cors({
-//   origin: [
-//     "http://localhost:8080",
-//     "http://localhost:3000",
-//     "http://localhost:5173",
-//     process.env.FRONTEND_ORIGIN,          // set in .env for production
-//   ].filter(Boolean),
-// }));
-
-// app.use(express.json({ limit: "20mb" })); // images can be large
-
-// // ── Proxy endpoint ────────────────────────────────────────────────────────────
-// app.post("/api/analyze", async (req, res) => {
-//   try {
-//     const apiKey = process.env.ANTHROPIC_API_KEY;
-//     if (!apiKey) {
-//       return res.status(500).json({ error: "ANTHROPIC_API_KEY not set on server" });
-//     }
-
-//     const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         "x-api-key": apiKey,
-//         "anthropic-version": "2023-06-01",
-//       },
-//       body: JSON.stringify(req.body),   // forward the exact payload from the client
-//     });
-
-//     const data = await upstream.json();
-
-//     if (!upstream.ok) {
-//       return res.status(upstream.status).json(data);
-//     }
-
-//     res.json(data);
-//   } catch (err) {
-//     console.error("Proxy error:", err);
-//     res.status(500).json({ error: "Proxy request failed", detail: err.message });
-//   }
-// });
-
-// app.listen(PORT, () =>
-//   console.log(`✅  Anthropic proxy running at http://localhost:${PORT}`)
-// );
-
-// ----------------------------2 gemini---------------------------------------
-
-// server.js  —  run with: node server.js
-// npm install express cors node-fetch dotenv
-
-// import express from "express";
-// import cors from "cors";
-// import dotenv from "dotenv";
-// import path from "path";
-// import { fileURLToPath } from "url";
-
-// // server.js lives in lib/server/, .env lives in the project root —
-// // go up two levels so dotenv finds it regardless of where `node server.js` is run from.
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
-
-// const app = express();
-// const PORT = process.env.PORT || 3001;
-
-// // Allow your Vite / CRA dev server (and production origin)
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:8080",
-//       "http://localhost:3000",
-//       "http://localhost:5173",
-//       process.env.FRONTEND_ORIGIN, // set in .env for production
-//     ].filter(Boolean),
-//   }),
-// );
-
-// app.use(express.json({ limit: "20mb" })); // images can be large
-
-// // ── Proxy endpoint ────────────────────────────────────────────────────────────
-// app.post("/api/analyze", async (req, res) => {
-//   try {
-//     const apiKey = process.env.GEMINI_API;
-//     console.log("Key present:", !!apiKey); // ← add this
-//     console.log("Key preview:", apiKey?.slice(0, 10)); // ← and this
-//     if (!apiKey) {
-//       return res.status(500).json({ error: "GEMINI_API not set on server" });
-//     }
-
-//     const { base64Image } = req.body;
-//     if (!base64Image) {
-//       return res.status(400).json({ error: "base64Image is required" });
-//     }
-
-//     // NEW - working model
-//     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-//     const payload = {
-//       contents: [
-//         {
-//           parts: [
-//             {
-//               text: `You are a friendly, positive appearance coach. Analyze the face in the photo and return ONLY valid JSON — no markdown fences, no preamble — matching this exact shape:
-// {
-//   "symmetry_score": "<number>%",
-//   "face_shape": "<shape name>",
-//   "lighting": "<Good|Harsh|Dim|Mixed>",
-//   "suggestions": ["<tip 1>", "<tip 2>", "<tip 3>", "<tip 4>"],
-//   "overall_vibe": "<one warm sentence>"
-// }
-// Keep suggestions short (max 10 words each), practical, and encouraging. If the image is not a face, return the same JSON with "N/A" values and a friendly note in overall_vibe.`,
-//             },
-//             {
-//               inline_data: {
-//                 mime_type: "image/png",
-//                 data: base64Image,
-//               },
-//             },
-//           ],
-//         },
-//       ],
-//       generationConfig: {
-//         temperature: 0.4,
-//         maxOutputTokens: 500,
-//       },
-//     };
-
-//     const upstream = await fetch(geminiUrl, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(payload),
-//     });
-
-//     const data = await upstream.json();
-//     console.log("Gemini response status:", upstream.status);
-
-//     if (!upstream.ok) {
-//       console.error("Gemini error:", JSON.stringify(data));
-//       return res
-//         .status(upstream.status)
-//         .json({ error: data?.error?.message ?? "Gemini API error" });
-//     }
-
-//     // Extract the text from Gemini response
-//     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-//     const clean = text.replace(/```json|```/gi, "").trim();
-
-//     let analysis;
-//     try {
-//       analysis = JSON.parse(clean);
-//     } catch {
-//       console.error("JSON parse failed, raw text:", text);
-//       return res.status(500).json({ error: "Failed to parse Gemini response", raw: text });
-//     }
-
-//     res.json(analysis);
-//   } catch (err) {
-//     console.error("Proxy error:", err);
-//     res.status(500).json({ error: "Proxy request failed", detail: err.message });
-//   }
-// });
-
-// app.listen(PORT, () => console.log(`✅  Anthropic proxy running at http://localhost:${PORT}`));
-
 //-----------------------3 meta-llama/llama----------------------
 
 // server.js — run with: node server.js
@@ -276,14 +99,14 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     const payload = {
-      model: "qwen/qwen3.6-27b",
+      model: process.env.GROQ_MODEL,
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "/no_think\n\n" + ANALYSIS_PROMPT, // ← disables thinking mode
+              text: ANALYSIS_PROMPT, // ← disables thinking mode
             },
             {
               type: "image_url",
@@ -316,25 +139,7 @@ app.post("/api/analyze", async (req, res) => {
         error: data?.error?.message ?? "Groq API error",
       });
     }
-  
-    // Extract text from Groq response (OpenAI-compatible format)
-//     const text = data?.choices?.[0]?.message?.content ?? "";
-//     const clean = text.replace(/```json|```/gi, "").trim();
 
-//     let analysis;
-//     try {
-//       analysis = JSON.parse(clean);
-//     } catch {
-//       console.error("JSON parse failed, raw text:", text);
-//       return res.status(500).json({ error: "Failed to parse Groq response", raw: text });
-//     }
-
-//     res.json(analysis);
-//   } catch (err) {
-//     console.error("Proxy error:", err);
-//     res.status(500).json({ error: "Proxy request failed", detail: err.message });
-//   }
-// });
 
 const text = data?.choices?.[0]?.message?.content ?? "";
 console.log("=== RAW RESPONSE START ===");
@@ -376,4 +181,15 @@ res.json(analysis);
     res.status(500).json({ error: "Proxy request failed", detail: err.message });
   }
 });
+
+// Temporary: shows which models YOUR Groq key can use
+app.get("/api/models", async (req, res) => {
+  const r = await fetch("https://api.groq.com/openai/v1/models", {
+    headers: { Authorization: `Bearer ${process.env.GROQ_API}` },
+  });
+  const data = await r.json();
+  res.json((data.data ?? []).map((m) => m.id));
+});
+
+console.log("GROQ_MODEL:", process.env.GROQ_MODEL);
 app.listen(PORT, () => console.log(`✅  Groq proxy running at http://localhost:${PORT}`));
