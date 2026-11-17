@@ -118,7 +118,7 @@ app.post("/api/analyze", async (req, res) => {
         },
       ],
       temperature: 0,
-      max_tokens: 3000,
+      max_tokens: 800,
     };
 
     const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
